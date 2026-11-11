@@ -25,26 +25,14 @@ variable "deletion_window_in_days" {
   }
 }
 
-variable "rotation_period_in_days" {
-  description = "Automatic key rotation period."
-  type        = number
-  default     = 365
-}
-
 variable "allow_cloudtrail" {
   description = "Allow CloudTrail to encrypt log files with this key."
   type        = bool
   default     = false
 }
 
-variable "allow_cloudwatch_logs" {
-  description = "Allow CloudWatch Logs in this region to encrypt log groups with this key."
-  type        = bool
-  default     = false
-}
-
 variable "allow_sns_publishers" {
-  description = "Allow EventBridge and CloudWatch alarms to publish to SNS topics encrypted with this key."
+  description = "Allow EventBridge to publish to SNS topics encrypted with this key."
   type        = bool
   default     = false
 }

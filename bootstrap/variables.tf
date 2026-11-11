@@ -10,13 +10,13 @@ variable "region" {
   default     = "ap-southeast-1"
 }
 
-variable "state_passphrase" {
-  description = "Passphrase that encrypts the local bootstrap state. At least 16 characters."
-  type        = string
-  sensitive   = true
+variable "allowed_account_ids" {
+  description = "Optional guard: AWS account IDs this configuration may run against. Empty allows any account."
+  type        = list(string)
+  default     = []
 
   validation {
-    condition     = length(var.state_passphrase) >= 16
-    error_message = "state_passphrase must be at least 16 characters."
+    condition     = alltrue([for id in var.allowed_account_ids : can(regex("^[0-9]{12}$", id))])
+    error_message = "Each account ID must be exactly 12 digits (use quotes to keep leading zeros)."
   }
 }

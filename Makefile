@@ -1,39 +1,27 @@
-ENV       ?= prod
-ENV_DIR   := environments/$(ENV)
-MODULES   := $(wildcard modules/*)
-TESTED    := modules/secure-bucket modules/alerting
+ENV_DIR := environments/prod
+MODULES := $(wildcard modules/*)
+TESTED  := modules/secure-bucket modules/alerting
 
-.PHONY: help fmt fmt-check validate test lint scan init plan apply bootstrap ci
+.PHONY: help fmt check bootstrap init plan apply
 
 help: ## Show targets
-	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-12s %s\n", $$1, $$2}'
+	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-10s %s\n", $$1, $$2}'
 
 fmt: ## Format all code
 	tofu fmt -recursive
 
-fmt-check: ## Fail if code is not formatted
+check: ## Offline checks: format, validate, unit tests (no AWS credentials needed)
 	tofu fmt -recursive -check -diff
-
-validate: ## Validate every module and environment without a backend
 	@for d in $(MODULES) bootstrap $(ENV_DIR); do \
-		echo "==> $$d"; \
+		echo "==> validate $$d"; \
 		tofu -chdir=$$d init -backend=false -input=false >/dev/null && tofu -chdir=$$d validate || exit 1; \
 	done
-
-test: ## Run offline unit tests (mock provider, no AWS credentials needed)
 	@for d in $(TESTED); do \
-		echo "==> $$d"; \
-		tofu -chdir=$$d init -backend=false -input=false >/dev/null && tofu -chdir=$$d test || exit 1; \
+		echo "==> test $$d"; \
+		tofu -chdir=$$d test || exit 1; \
 	done
 
-lint: ## Run tflint
-	tflint --init && tflint --recursive --config=$(CURDIR)/.tflint.hcl
-
-scan: ## Static security scan (trivy + checkov)
-	trivy config --severity HIGH,CRITICAL --exit-code 1 .
-	checkov -d . --framework terraform --quiet --compact
-
-bootstrap: ## Create the state bucket and KMS key (needs TF_VAR_state_passphrase)
+bootstrap: ## Create the state bucket and KMS key (run once)
 	tofu -chdir=bootstrap init && tofu -chdir=bootstrap apply
 
 init: ## Init the environment with the remote backend
@@ -44,5 +32,3 @@ plan: ## Plan the environment
 
 apply: ## Apply the saved plan
 	tofu -chdir=$(ENV_DIR) apply tfplan
-
-ci: fmt-check validate test ## Checks run in CI

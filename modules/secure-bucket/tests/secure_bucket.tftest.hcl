@@ -45,11 +45,6 @@ run "defaults_are_locked_down" {
   }
 
   assert {
-    condition     = length(aws_s3_bucket_logging.this) == 0
-    error_message = "Access logging must be off when no target bucket is given."
-  }
-
-  assert {
     condition     = aws_s3_bucket.this.force_destroy == false
     error_message = "force_destroy must default to false."
   }
@@ -59,18 +54,12 @@ run "uses_kms_when_key_given" {
   command = plan
 
   variables {
-    kms_key_arn       = "arn:aws:kms:ap-southeast-1:123456789012:key/00000000-0000-0000-0000-000000000000"
-    access_log_bucket = "example-access-logs"
+    kms_key_arn = "arn:aws:kms:ap-southeast-1:123456789012:key/00000000-0000-0000-0000-000000000000"
   }
 
   assert {
     condition     = tolist(aws_s3_bucket_server_side_encryption_configuration.this.rule)[0].apply_server_side_encryption_by_default[0].sse_algorithm == "aws:kms"
     error_message = "SSE-KMS must be used when a key is given."
-  }
-
-  assert {
-    condition     = length(aws_s3_bucket_logging.this) == 1
-    error_message = "Access logging must be on when a target bucket is given."
   }
 }
 

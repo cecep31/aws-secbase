@@ -1,11 +1,9 @@
 data "aws_caller_identity" "current" {}
 data "aws_partition" "current" {}
-data "aws_region" "current" {}
 
 locals {
   account_id = data.aws_caller_identity.current.account_id
   partition  = data.aws_partition.current.partition
-  region     = data.aws_region.current.region
 }
 
 data "aws_iam_policy_document" "this" {
@@ -67,33 +65,7 @@ data "aws_iam_policy_document" "this" {
     }
   }
 
-  dynamic "statement" {
-    for_each = var.allow_cloudwatch_logs ? [1] : []
-    content {
-      sid = "AllowCloudWatchLogs"
-      actions = [
-        "kms:Encrypt*",
-        "kms:Decrypt*",
-        "kms:ReEncrypt*",
-        "kms:GenerateDataKey*",
-        "kms:Describe*",
-      ]
-      resources = ["*"]
-
-      principals {
-        type        = "Service"
-        identifiers = ["logs.${local.region}.amazonaws.com"]
-      }
-
-      condition {
-        test     = "ArnLike"
-        variable = "kms:EncryptionContext:aws:logs:arn"
-        values   = ["arn:${local.partition}:logs:${local.region}:${local.account_id}:log-group:*"]
-      }
-    }
-  }
-
-  # EventBridge and CloudWatch alarms need the key to publish to an encrypted SNS topic.
+  # EventBridge needs the key to publish to an encrypted SNS topic.
   dynamic "statement" {
     for_each = var.allow_sns_publishers ? [1] : []
     content {
@@ -103,7 +75,7 @@ data "aws_iam_policy_document" "this" {
 
       principals {
         type        = "Service"
-        identifiers = ["events.amazonaws.com", "cloudwatch.amazonaws.com"]
+        identifiers = ["events.amazonaws.com"]
       }
     }
   }
@@ -113,7 +85,6 @@ resource "aws_kms_key" "this" {
   description             = var.description
   deletion_window_in_days = var.deletion_window_in_days
   enable_key_rotation     = true
-  rotation_period_in_days = var.rotation_period_in_days
   policy                  = data.aws_iam_policy_document.this.json
   tags                    = var.tags
 }

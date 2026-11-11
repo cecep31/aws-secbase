@@ -1,9 +1,11 @@
-output "state_bucket" {
-  description = "Bucket for remote state."
-  value       = module.state_bucket.id
-}
-
-output "state_kms_key_arn" {
-  description = "KMS key for state. Put it in environments/prod/terraform.tfvars as state_kms_key_id."
-  value       = module.state_key.key_arn
+output "backend_config" {
+  description = "Paste this into environments/prod/backend.hcl."
+  value       = <<-EOT
+    bucket       = "${module.state_bucket.id}"
+    key          = "security-baseline/prod/terraform.tfstate"
+    region       = "${var.region}"
+    encrypt      = true
+    kms_key_id   = "${module.state_key.key_arn}"
+    use_lockfile = true
+  EOT
 }

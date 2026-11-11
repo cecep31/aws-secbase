@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Name of the SNS topic and prefix for EventBridge rules."
+  description = "Name of the SNS topic and prefix for the EventBridge rule."
   type        = string
 }
 
@@ -19,30 +19,13 @@ variable "alert_emails" {
   }
 }
 
-variable "cloudtrail_log_group_name" {
-  description = "CloudWatch log group that receives CloudTrail events."
-  type        = string
-}
-
-variable "enable_cis_alarms" {
-  description = "Create the CIS metric filters and alarms."
-  type        = bool
-  default     = true
-}
-
-variable "metric_namespace" {
-  description = "CloudWatch namespace for the CIS metrics."
-  type        = string
-  default     = "CISBenchmark"
-}
-
-variable "securityhub_alert_severities" {
+variable "severities" {
   description = "Security Hub severity labels that trigger an alert."
   type        = list(string)
   default     = ["CRITICAL", "HIGH"]
 
   validation {
-    condition     = alltrue([for s in var.securityhub_alert_severities : contains(["INFORMATIONAL", "LOW", "MEDIUM", "HIGH", "CRITICAL"], s)])
+    condition     = alltrue([for s in var.severities : contains(["INFORMATIONAL", "LOW", "MEDIUM", "HIGH", "CRITICAL"], s)])
     error_message = "Valid severities: INFORMATIONAL, LOW, MEDIUM, HIGH, CRITICAL."
   }
 }

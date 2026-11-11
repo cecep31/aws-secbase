@@ -26,13 +26,3 @@ resource "aws_securityhub_standards_subscription" "this" {
 
   depends_on = [aws_securityhub_account.this]
 }
-
-# Pulls findings from the linked regions into this one so alerts only need one place.
-resource "aws_securityhub_finding_aggregator" "this" {
-  count = length(var.aggregate_regions) > 0 ? 1 : 0
-
-  linking_mode      = "SPECIFIED_REGIONS"
-  specified_regions = var.aggregate_regions
-
-  depends_on = [aws_securityhub_account.this]
-}

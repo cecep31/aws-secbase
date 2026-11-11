@@ -19,19 +19,13 @@ mock_provider "aws" {
 }
 
 variables {
-  name                      = "security-alerts"
-  kms_key_arn               = "arn:aws:kms:ap-southeast-1:123456789012:key/00000000-0000-0000-0000-000000000000"
-  cloudtrail_log_group_name = "/aws/cloudtrail/example"
-  alert_emails              = ["security@example.com"]
+  name         = "security-alerts"
+  kms_key_arn  = "arn:aws:kms:ap-southeast-1:123456789012:key/00000000-0000-0000-0000-000000000000"
+  alert_emails = ["security@example.com"]
 }
 
-run "creates_all_cis_alarms" {
+run "topic_is_encrypted_and_subscribed" {
   command = plan
-
-  assert {
-    condition     = length(aws_cloudwatch_metric_alarm.cis) == 15
-    error_message = "Expected 15 CIS alarms."
-  }
 
   assert {
     condition     = aws_sns_topic.this.kms_master_key_id == var.kms_key_arn
@@ -41,19 +35,6 @@ run "creates_all_cis_alarms" {
   assert {
     condition     = length(aws_sns_topic_subscription.email) == 1
     error_message = "One email subscription expected."
-  }
-}
-
-run "cis_alarms_can_be_disabled" {
-  command = plan
-
-  variables {
-    enable_cis_alarms = false
-  }
-
-  assert {
-    condition     = length(aws_cloudwatch_metric_alarm.cis) == 0
-    error_message = "No CIS alarms expected when disabled."
   }
 }
 

@@ -9,13 +9,7 @@ variable "bucket_name" {
 }
 
 variable "kms_key_arn" {
-  description = "KMS key for SSE-KMS. Null uses SSE-S3 (AES256), which is required for S3 server access log targets."
-  type        = string
-  default     = null
-}
-
-variable "access_log_bucket" {
-  description = "Bucket that receives S3 server access logs for this bucket. Null disables access logging."
+  description = "KMS key for SSE-KMS. Null uses SSE-S3 (AES256)."
   type        = string
   default     = null
 }
