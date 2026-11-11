@@ -1,0 +1,17 @@
+project     = "secbase"
+environment = "prod"
+
+home_region        = "ap-southeast-1" # Singapore
+additional_regions = [] # Singapore only; add more regions here if needed
+
+# Output "state_kms_key_arn" from bootstrap
+state_kms_key_id = "arn:aws:kms:ap-southeast-1:111122223333:key/00000000-0000-0000-0000-000000000000"
+
+alert_emails = ["security@example.com"]
+
+securityhub_standards = ["aws-foundational", "cis-v3"]
+
+tags = {
+  Owner      = "platform-team"
+  CostCenter = "security"
+}
